@@ -1,3 +1,10 @@
+# Initial
+```shell
+virtualenv env
+source env/bin/activate
+pip install Flask
+pip install SQLAlchemy
+```
 # Information about Models in app
 ## Structure:
 - we are using [sqlAlchemy](http://www.sqlalchemy.org/), so you need to check this docs first
