@@ -2,7 +2,6 @@ from flask import Flask
 from utils import jsonify
 from db import init_db, db_session
 from models import User as UserDao
-import json
 # init data base
 
 
