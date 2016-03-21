@@ -1,10 +1,13 @@
 from sqlalchemy import Column, Integer, String
 from db import Base
+from decorators import *
 
 
+@dict_model(name=None, email=None)
 class User(Base):
     __tablename__ = 'users'
     __plural__ = 'users'
+
     id = Column(Integer, primary_key=True)
     name = Column(String(50), unique=True, nullable=False)
     email = Column(String(120), unique=True, nullable=True)

@@ -12,7 +12,11 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     list_all = UserDao.User.query.all()
-    return jsonify(list_all, groups=list_all)
+    if len(list_all) == 0:
+        user = UserDao.User(name='artem', email='line@artem.com')
+        db_session.add(user)
+        db_session.commit()
+    return jsonify(list_all)
 
 if __name__ == '__main__':
     init_db()

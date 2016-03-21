@@ -12,6 +12,27 @@ def merge_dictionaries(*dict_args):
     return result
 
 
+def parse_list(listed):
+    result = {}
+    if isinstance(listed, (list, tuple)):
+        is_array = True
+        if len(listed) > 0:
+            if hasattr(type(listed[0]), '__plural__'):
+                accessor = getattr(type(listed[0]), '__plural__')
+            else:
+                accessor = getattr(type(listed[0]), '__tablename__')
+            result[accessor] = []
+        for list_item in listed:
+            if hasattr(list_item, 'as_dict'):
+                if is_array:
+                    result[accessor].append(list_item.as_dict())
+                else:
+                    result[type(list_item).__name__.lower()] = list_item.as_dict()
+    else:
+        result = None
+    return result
+
+
 def jsonify(*args, **kwargs):
     """
     This function converts (list, tuple) to dictionary and returns JSONify representation.
@@ -26,24 +47,15 @@ def jsonify(*args, **kwargs):
         if hasattr(arg, 'as_dict'):
             result = merge_dictionaries(result, arg.as_dict())
         else:
-            is_array = False
             # set accessor (just a key in dict where we store an array) for list or tuple only
             if isinstance(arg, (list, tuple)):
-                is_array = True
-                if len(arg) > 0:
-                    if hasattr(type(arg[0]), '__plural__'):
-                        accessor = getattr(type(arg[0]), '__plural__')
-                    else:
-                        accessor = getattr(type(arg[0]), '__tablename__')
-                    result[accessor] = []
-            else:
-                accessor = type(arg).__name__.lower()
-            for list_item in arg:
-                if hasattr(list_item, 'as_dict'):
-                    if is_array:
+                result = merge_dictionaries(result, parse_list(arg))
+            elif isinstance(arg, dict):
+                for accessor, list_item in arg.items():
+                    if hasattr(list_item, 'as_dict'):
                         result[accessor].append(list_item.as_dict())
-                    else:
-                        result[type(list_item).__name__.lower()] = list_item.as_dict()
+                    elif isinstance(list_item, (list, tuple)):
+                        result = merge_dictionaries(result, parse_list(list_item))
     for key, value in kwargs.items():
         if isinstance(value, (list, tuple)):
             result[key] = []
