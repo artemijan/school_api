@@ -1,6 +1,13 @@
 from flask import jsonify as jsfy
 
 
+def get_json_key(obj, key):
+    if key in obj:
+        return obj[key]
+    else:
+        return None
+
+
 def merge_dictionaries(*dict_args):
     """
     Given any number of dicts, shallow copy and merge into a new dict,
@@ -49,6 +56,7 @@ def jsonify(*args, **kwargs):
     :param kwargs:
     :return: JSON
     """
+    props = None
     if 'props' in kwargs:
         props = kwargs['props']
     result = {}
@@ -65,6 +73,8 @@ def jsonify(*args, **kwargs):
                         result[accessor].append(list_item.as_dict(props=props))
                     elif isinstance(list_item, (list, tuple)):
                         result = merge_dictionaries(result, parse_list(list_item, accessor=accessor, props=props))
+                    else:
+                        result[accessor] = list_item
     for key, value in kwargs.items():
         if isinstance(value, (list, tuple)):
             result[key] = []

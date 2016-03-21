@@ -1,26 +1,79 @@
-from flask import Flask
-from utils import jsonify
-from db import init_db, db_session
-from models import User as UserDao
-# init data base
+import os
+from flask import Flask, abort, request
+import common.db as db
+from common.utils import get_json_key
+from common.utils import jsonify
+from models.User import User
+from common.app_config import Config
+from security.decorators import is_authorized
 
-
-# init flask app
+# initialization
 app = Flask(__name__)
+app.config['SECRET_KEY'] = getattr(Config, 'SECRET_KEY', '!@#$%^*DFHF!@$$())FHF!@#$@#%$$%')
 
 
-@app.route('/')
-def index():
-    list_all = UserDao.User.query.all()
-    if len(list_all) == 0:
-        user = UserDao.User(name='artem', email='line@artem.com')
-        db_session.add(user)
-        db_session.commit()
-    return jsonify(list_all, props={"email": None})
+@app.route('/api/users', methods=['POST'])
+@is_authorized
+def new_user():
+    username = request.json.get('username')
+    password = request.json.get('password')
+    if username is None or password is None:
+        abort(400)  # missing arguments
+    if User.query.filter_by(username=username).first() is not None:
+        return jsonify({"message": "User already exist"}), 400
+    user = User(username=username)
+    user.hash_password(password)
+    db.session.add(user)
+    try:
+        db.session.commit()
+        return jsonify({'username': user.username}), 201
+    except:
+        db.session.rollback()
+        return jsonify({"message": "Wrong user data"}), 400
+
+
+@app.route('/api/users/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+@is_authorized
+def get_user(id):
+    user = User.query.get(id)
+    if not user:
+        jsonify({"message": "User not found"}), 404
+    if request.method == 'GET':
+        return jsonify(user)
+    elif request.method == 'PUT':
+        user.name = get_json_key(request.json, 'name')
+        user.username = get_json_key(request.json, 'username')
+        user.email = get_json_key(request.json, 'email')
+        try:
+            db.session.commit()
+            return jsonify(user)
+        except:
+            db.session.rollback()
+            return jsonify({"message": "Update user failure"}), 400
+
+
+@app.route('/api/users/', methods=['GET'])
+def user_list():
+    return jsonify(User.query.all())
+
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    username = request.json.get('username')
+    password = request.json.get('password')
+    user = User.verify_auth_token(username)
+    if not user:
+        # try to authenticate with username/password
+        user = User.query.filter_by(username=username).first()
+        if user and user.verify_password(password):
+            token = user.generate_auth_token(600)
+            return jsonify({"token": token.decode('ascii'), "duration": 600})
+        else:
+            return jsonify({"message": "Login failed"}), 401
+
 
 if __name__ == '__main__':
-    init_db()
-    # user = UserDao.User(name='artem2', email='line2@artem.com')
-    # db_session.add(user)
-    # db_session.commit()
-    app.run(debug=False, use_reloader=False, port=9888, host='localhost')
+    db.init_db()
+    if not os.path.exists('db.sqlite'):
+        db.create_all()
+    app.run(debug=True, port=9888, host='localhost')
