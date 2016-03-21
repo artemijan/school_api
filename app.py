@@ -16,7 +16,7 @@ def index():
         user = UserDao.User(name='artem', email='line@artem.com')
         db_session.add(user)
         db_session.commit()
-    return jsonify(list_all)
+    return jsonify(list_all, props={"email": None})
 
 if __name__ == '__main__':
     init_db()

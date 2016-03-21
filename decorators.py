@@ -1,11 +1,21 @@
 from sqlalchemy.orm.attributes import QueryableAttribute
 
 
-def as_dict(*args):
+def as_dict(*args, **kwargs):
     _dict = {}
+    props = None
+    if 'props' in kwargs:
+        props = kwargs['props']
     if args:
-        for prop in args[0].__props__:
-            _dict[prop] = getattr(args[0], prop)
+        if props:
+            for prop in props:
+                try:
+                    _dict[prop] = getattr(args[0], prop)
+                except AttributeError, e:
+                    print e.message
+        else:
+            for prop in args[0].__props__:
+                _dict[prop] = getattr(args[0], prop)
     return _dict
 
 
