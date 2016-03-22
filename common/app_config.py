@@ -4,6 +4,7 @@ class Config(object):
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SESSION_TOKEN_DURATION = 1200
 
+
 class ProductionConfig(Config):
     DATABASE_URI = 'mysql://user@localhost/foo'
 
