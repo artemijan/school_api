@@ -10,6 +10,7 @@ from security.decorators import is_authorized
 # initialization
 app = Flask(__name__)
 app.config['SECRET_KEY'] = getattr(Config, 'SECRET_KEY', '!@#$%^*DFHF!@$$())FHF!@#$@#%$$%')
+SESSION_TOKEN_DURATION = getattr(Config, 'SESSION_TOKEN_DURATION', 1200)
 
 
 @app.route('/api/users', methods=['POST'])
@@ -66,8 +67,8 @@ def login():
         # try to authenticate with username/password
         user = User.query.filter_by(username=username).first()
         if user and user.verify_password(password):
-            token = user.generate_auth_token(600)
-            return jsonify({"token": token.decode('ascii'), "duration": 600})
+            token = user.generate_auth_token(SESSION_TOKEN_DURATION)
+            return jsonify({"token": token.decode('ascii'), "duration": SESSION_TOKEN_DURATION})
         else:
             return jsonify({"message": "Login failed"}), 401
 

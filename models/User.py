@@ -1,17 +1,17 @@
 from sqlalchemy import Column, Integer, String
 from common.db import Base
-from common.decorators import *
+from common.utils import Serializable
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
 from common.app_config import Config
 
 
-@dict_model(name=None, email=None, username=None)
-class User(Base):
+class User(Base, Serializable):
     __tablename__ = 'users'
     __plural__ = 'users'
-
+    # is needed for serializable, property wouldn't be in serialized data because it's write only
+    __wtite_only__ = ('password_hash',)
     id = Column(Integer, primary_key=True)
     username = Column(String(50), unique=True, nullable=True)
     name = Column(String(50), unique=True, nullable=True)
