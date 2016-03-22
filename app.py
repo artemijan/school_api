@@ -22,4 +22,5 @@ if __name__ == '__main__':
     db.init_db()
     if not os.path.exists('db.sqlite'):
         db.create_all()
-    app.run(debug=True, port=9888, host='localhost')
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
