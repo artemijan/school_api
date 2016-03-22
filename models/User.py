@@ -11,7 +11,7 @@ class User(Base, Serializable):
     __tablename__ = 'users'
     __plural__ = 'users'
     # is needed for serializable, property wouldn't be in serialized data because it's write only
-    __wtite_only__ = ('password_hash',)
+    __write_only__ = ('password_hash',)
     id = Column(Integer, primary_key=True)
     username = Column(String(50), unique=True, nullable=True)
     name = Column(String(50), unique=True, nullable=True)

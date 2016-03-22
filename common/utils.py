@@ -6,6 +6,7 @@ class Serializable:
 
     def __init__(self):
         self.__serializable_props__ = ()
+        self.__write_only__ = ()
 
     def serialize(self, **kwargs):
         """
@@ -15,6 +16,10 @@ class Serializable:
         :param kwargs:
         :return:
         """
+
+        if len(getattr(self, '__write_only__', ())) == 0:
+            self.__write_only__ = ()
+
         if len(getattr(self, '__iterable__', ())) == 0:
             self.__serializable_props__ = ()
             for key in dir(self.__class__):
@@ -29,7 +34,7 @@ class Serializable:
                     dictionary[prop] = self[prop]
         else:
             for key in self.__serializable_props__:
-                if not (key in self.__wtite_only__):
+                if not (key in self.__write_only__):
                     dictionary[key] = getattr(self, key, None)
         return dictionary
 
