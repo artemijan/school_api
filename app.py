@@ -1,4 +1,5 @@
 import os
+from flask.ext.cors import CORS
 from flask import Flask
 import common.db as db
 import pkgutil
@@ -8,7 +9,7 @@ from common.app_config import Config
 # initialization
 app = Flask(__name__)
 app.config['SECRET_KEY'] = getattr(Config, 'SECRET_KEY', '!@#$%^*DFHF!@$$())FHF!@#$@#%$$%')
-
+CORS(app, recorces={r"/*": {"origins": ["localhost:9002", "sumragen.github.io"]}})
 """
 Auto registration all routes through Blueprints
 """

@@ -108,6 +108,8 @@ def jsonify(*args, **kwargs):
             elif isinstance(arg, dict):
                 for accessor, list_item in arg.items():
                     if isinstance(list_item, Serializable):
+                        if not hasattr(result, accessor):
+                            result[accessor] = []
                         result[accessor].append(list_item.serialize(props=props))
                     elif isinstance(list_item, (list, tuple)):
                         result = merge_dictionaries(result, parse_list(list_item, accessor=accessor, props=props))

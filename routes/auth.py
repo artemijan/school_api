@@ -21,7 +21,8 @@ def login():
         if user:
             if user.verify_password(password):
                 token = user.generate_auth_token(SESSION_TOKEN_DURATION)
-                return jsonify({"token": token.decode('ascii'), "duration": SESSION_TOKEN_DURATION})
+                return jsonify(
+                    {"sessionToken": token.decode('ascii'), "duration": SESSION_TOKEN_DURATION, "currentUser": user})
             else:
                 return jsonify({"message": "password is incorrect"}), 401
         else:
