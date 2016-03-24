@@ -10,7 +10,7 @@ def is_authorized(fn):
             return jsonify({"message": "Authorization required"}), 403
         user = User.verify_auth_token(token)
         if user:
-            return fn(args, kwargs)
+            return fn(*args, **kwargs)
         else:
             return jsonify({"message": "Session token is invalid"}), 403
     wrapped_fn.__name__ = fn.__name__
