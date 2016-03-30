@@ -31,7 +31,7 @@ def login():
 
 @auth.route('/api/register', methods=['POST'])
 def register():
-    user = User(json=request.json)
+    user = User.from_json(request.json)
     if 'password' not in request.json:
         return jsonify({"message": "Password is required"})
     password = request.json['password']

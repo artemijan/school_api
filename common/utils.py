@@ -1,42 +1,5 @@
 from flask import jsonify as jsfy
-from sqlalchemy.orm.attributes import QueryableAttribute
-
-
-class Serializable:
-
-    def __init__(self):
-        self.__serializable_props__ = ()
-        self.__write_only__ = ()
-
-    def serialize(self, **kwargs):
-        """
-        Why do we need init _iterable here?
-        Because __init__ method could be not called at all, for example:
-        User.query.all() - since we don't call constructor, __init__ method wouldn't be called
-        :param kwargs:
-        :return:
-        """
-
-        if len(getattr(self, '__write_only__', ())) == 0:
-            self.__write_only__ = ()
-
-        if len(getattr(self, '__iterable__', ())) == 0:
-            self.__serializable_props__ = ()
-            for key in dir(self.__class__):
-                if (not key.startswith('_')) & hasattr(self.__class__, key) & isinstance(
-                        getattr(self.__class__, key), QueryableAttribute):
-                    self.__serializable_props__ += (key,)
-        dictionary = {}
-        prop = 'props'
-        if (prop in kwargs) & (kwargs[prop] is not None):
-            for prop in kwargs:
-                if hasattr(self, prop):
-                    dictionary[prop] = self[prop]
-        else:
-            for key in self.__serializable_props__:
-                if not (key in self.__write_only__):
-                    dictionary[key] = getattr(self, key, None)
-        return dictionary
+from models.Serializable import Serializable
 
 
 def get_json_key(obj, key):

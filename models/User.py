@@ -1,36 +1,24 @@
 from sqlalchemy import Column, Integer, String
 from common.db import Base
-from common.utils import Serializable
+from models.Serializable import Serializable
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
 from common.app_config import Config
-from sqlalchemy.orm.attributes import QueryableAttribute
 
 
-class User(Base, Serializable):
+class User(Serializable, Base):
     __tablename__ = 'users'
     __plural__ = 'users'
     # is needed for serializable, property wouldn't be in serialized data because it's write only
     __write_only__ = ('password_hash',)
+    __exclude__ = ('password',)
     id = Column(Integer, primary_key=True)
     username = Column(String(50), unique=True, nullable=True)
     first_name = Column(String(50), unique=False, nullable=False)
     last_name = Column(String(50), unique=False, nullable=False)
     email = Column(String(120), unique=True, nullable=False)
     password_hash = Column(String(64))
-
-    def __init__(self, name=None, email=None, username=None, json=None):
-        if json:
-            for prop, value in json.iteritems():
-                # ignore all non user data, e.g. only
-                if (not ((prop == 'id') | (prop == 'password'))) & isinstance(getattr(self.__class__, prop, None),
-                                                                              QueryableAttribute):
-                    setattr(self, prop, value)
-        else:
-            self.name = name
-            self.email = email
-            self.username = username
 
     def __repr__(self):
         return '<User %>' % self.name
