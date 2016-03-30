@@ -10,16 +10,13 @@ class Serializable(object):
     @classmethod
     def from_json(cls, json):
         self = cls()
-        if not isinstance(cls.__exclude__, tuple):
-            cls.__exclude__ = ()
-        cls.__exclude__ += Serializable.__exclude__
-        if not isinstance(cls.__include__, tuple):
-            cls.__include__ = ()
+        exclude = (cls.__exclude__ or ()) + Serializable.__exclude__
+        include = cls.__include__ or ()
         if json:
             for prop, value in json.iteritems():
                 # ignore all non user data, e.g. only
-                if (not (prop in self.__class__.__exclude__) | (prop in self.__class__.__include__)) & isinstance(
-                        getattr(self.__class__, prop, None), QueryableAttribute):
+                if (not (prop in exclude) | (prop in include)) & isinstance(
+                        getattr(cls, prop, None), QueryableAttribute):
                     setattr(self, prop, value)
         return self
 
