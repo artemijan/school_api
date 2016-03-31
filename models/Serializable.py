@@ -1,4 +1,5 @@
 from sqlalchemy.orm.attributes import QueryableAttribute
+from sqlalchemy.orm.collections import InstrumentedList
 
 
 class Serializable(object):
@@ -8,8 +9,11 @@ class Serializable(object):
     __write_only__ = ()
 
     @classmethod
-    def from_json(cls, json):
-        self = cls()
+    def from_json(cls, json, selfObj=None):
+        if selfObj is None:
+            self = cls()
+        else:
+            self = selfObj
         exclude = (cls.__exclude__ or ()) + Serializable.__exclude__
         include = cls.__include__ or ()
         if json:
@@ -20,6 +24,23 @@ class Serializable(object):
                     setattr(self, prop, value)
         return self
 
+    def deserialize(self, json):
+        if not json:
+            return None
+        return self.__class__.from_json(json, selfObj=self)
+
+    def initialize(self):
+        if len(getattr(self.__class__, '__write_only__', ())) == 0:
+            self.__class__.__write_only__ = ()
+
+        if len(getattr(self.__class__, '__serializable_props__', ())) == 0:
+            self.__class__.__serializable_props__ = ()
+            for key in dir(self.__class__):
+                if (not key.startswith('_')) & hasattr(self.__class__, key) & isinstance(
+                        getattr(self.__class__, key), QueryableAttribute):
+                    self.__class__.__serializable_props__ += (key,)
+        self.__class__._initialized = True
+
     def serialize(self, **kwargs):
         """
         Why do we need init _iterable here?
@@ -28,24 +49,32 @@ class Serializable(object):
         :param kwargs:
         :return:
         """
-
-        if len(getattr(self, '__write_only__', ())) == 0:
-            self.__write_only__ = ()
-
-        if len(getattr(self, '__iterable__', ())) == 0:
-            self.__serializable_props__ = ()
-            for key in dir(self.__class__):
-                if (not key.startswith('_')) & hasattr(self.__class__, key) & isinstance(
-                        getattr(self.__class__, key), QueryableAttribute):
-                    self.__serializable_props__ += (key,)
+        if not getattr(self.__class__, '_initialized', None):
+            self.initialize()
         dictionary = {}
         prop = 'props'
-        if (prop in kwargs) & (kwargs[prop] is not None):
+        # recursive call, "exclude" is needed to prevent circular dependency serialization
+        exclude = kwargs.get('exclude', ())
+        if (prop in kwargs) & (kwargs.get(prop, None) is not None):
             for prop in kwargs:
                 if hasattr(self, prop):
                     dictionary[prop] = self[prop]
         else:
-            for key in self.__serializable_props__:
-                if not (key in self.__write_only__):
-                    dictionary[key] = getattr(self, key, None)
+            # loop trough all accessible properties
+            for key in self.__class__.__serializable_props__:
+                # check if those properties are read only
+                if not (key in self.__class__.__write_only__):
+                    # check if property is an array
+                    if isinstance(getattr(self, key, None), InstrumentedList):
+                        # if this property is not excluded
+                        if not (getattr(self, key)[0].__class__ in exclude):
+                            # if dictionary doesn't have this property then init it
+                            if not (key in dictionary) or not isinstance(dictionary[key], list):
+                                dictionary[key] = []
+                            if len(getattr(self, key)) > 0:
+                                for li in getattr(self, key):
+                                    dictionary[key].append(li.serialize(exclude=(exclude + (self.__class__,))))
+                    # if not array
+                    else:
+                        dictionary[key] = getattr(self, key, None)
         return dictionary
