@@ -72,6 +72,7 @@ class Serializable(object):
                             if not (key in dictionary) or not isinstance(dictionary[key], list):
                                 dictionary[key] = []
                             if len(getattr(self, key)) > 0:
+                                # serialize each list item and put it into array
                                 for li in getattr(self, key):
                                     dictionary[key].append(li.serialize(exclude=(exclude + (self.__class__,))))
                     # if not array
