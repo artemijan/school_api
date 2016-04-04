@@ -4,6 +4,7 @@ from common.utils import get_json_key
 from common.utils import jsonify
 from models.User import User
 from security.decorators import is_authorized
+import sqlalchemy
 
 users = Blueprint('users', __name__)
 
@@ -23,9 +24,10 @@ def new_user():
     try:
         db.session.commit()
         return jsonify({'username': user.username}), 201
-    except:
+    except sqlalchemy.exc.IntegrityError, exc:
+        reason = exc.message
         db.session.rollback()
-        return jsonify({"message": "Wrong user data"}), 400
+        return jsonify({"message": reason}), 400
 
 
 @users.route('/api/users/<int:id>', methods=['GET', 'PUT', 'DELETE'])
@@ -43,9 +45,10 @@ def get_user(id):
         try:
             db.session.commit()
             return jsonify(user)
-        except:
+        except sqlalchemy.exc.IntegrityError, exc:
+            reason = exc.message
             db.session.rollback()
-            return jsonify({"message": "Update user failure"}), 400
+            return jsonify({"message": reason}), 400
 
 
 @users.route('/api/users/', methods=['GET'])
