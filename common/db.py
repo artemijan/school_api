@@ -10,7 +10,7 @@ SQLALCHEMY_DATABASE_URI = getattr(Config, 'SQLALCHEMY_DATABASE_URI', 'sqlite:///
 SQLALCHEMY_COMMIT_ON_TEARDOWN = getattr(Config, 'SQLALCHEMY_COMMIT_ON_TEARDOWN', True)
 
 
-engine = create_engine(SQLALCHEMY_DATABASE_URI, convert_unicode=True)
+engine = create_engine(SQLALCHEMY_DATABASE_URI, convert_unicode=True, echo=True)
 session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
 
 Base = declarative_base()
