@@ -1,11 +1,9 @@
 from sqlalchemy.orm.attributes import QueryableAttribute
-from sqlalchemy.orm.collections import InstrumentedList
 
 
 class Serializable(object):
     __exclude__ = ('id',)
     __include__ = ()
-    __serializable_props__ = ()
     __write_only__ = ()
 
     @classmethod
@@ -41,20 +39,23 @@ class Serializable(object):
 
     def serialize(self, **kwargs):
 
+        # init write only props
         if len(getattr(self.__class__, '__write_only__', ())) == 0:
             self.__class__.__write_only__ = ()
         dictionary = {}
         expand = kwargs.get('expand', ()) or ()
         prop = 'props'
         if expand:
+            # expand all the fields
             for key in expand:
                 getattr(self, key)
         iterable = self.__dict__.items()
         is_custom_property_set = False
+        # include only properties passed as parameter
         if (prop in kwargs) and (kwargs.get(prop, None) is not None):
             is_custom_property_set = True
             iterable = kwargs.get(prop, None)
-            # loop trough all accessible properties
+        # loop trough all accessible properties
         for key in iterable:
             accessor = key
             if isinstance(key, tuple):
