@@ -1,5 +1,6 @@
-from flask import Blueprint, abort, request
+from flask import Blueprint, request
 import common.db as db
+from security.decorators import is_authorized
 from common.utils import jsonify
 from models.Subject import Teacher
 import sqlalchemy
@@ -8,6 +9,7 @@ teachers = Blueprint('teachers', __name__)
 
 
 @teachers.route('/api/teachers/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+@is_authorized
 def get_user(id):
     teacher = Teacher.query.get(id)
     if not teacher:
@@ -27,5 +29,6 @@ def get_user(id):
 
 
 @teachers.route('/api/teachers/', methods=['GET'])
+@is_authorized
 def user_list():
     return jsonify(Teacher.query.all())
