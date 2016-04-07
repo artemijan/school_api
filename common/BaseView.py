@@ -30,7 +30,10 @@ class BaseView:
         if 'GET' in methods:
             self.__blue_print__.route(base_url, methods=['GET'])(self.get_all)
 
-    def get_blueprint(self):
+    def get_view(self):
+        """
+        :return: Blueprint
+        """
         return self.__blue_print__
 
     def post(self):

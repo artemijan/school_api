@@ -1,5 +1,7 @@
 from models.Subject import Teacher, Subject
+from models.Event import Event
 from common.BaseView import BaseView
+from security.decorators import is_authorized
 
 
 class TeacherView(BaseView):
@@ -10,5 +12,11 @@ class SubjectView(BaseView):
     __model_class__ = Subject
 
 
-default_views = [TeacherView(decorators=[], base_url='/api/teachers/').get_blueprint(),
-                 SubjectView(decorators=[], base_url='/api/subjects/').get_blueprint()]
+class EventsView(BaseView):
+    __model_class__ = Event
+
+
+default_decorators = [is_authorized]
+default_views = [TeacherView(decorators=default_decorators, base_url='/api/teachers/').get_view(),
+                 SubjectView(decorators=default_decorators, base_url='/api/subjects/').get_view(),
+                 EventsView(decorators=default_decorators, base_url='/api/events/')]
