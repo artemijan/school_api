@@ -3,4 +3,4 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///db.sqlite'
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SESSION_TOKEN_DURATION = 1200
-    SQLALCHEMY_ECHO = True
+    SQLALCHEMY_ECHO = False
