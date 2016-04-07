@@ -20,7 +20,7 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user:
             if user.verify_password(password):
-                token = user.generate_auth_token(SESSION_TOKEN_DURATION)
+                token = user.generate_auth_token()
                 return jsonify(
                     {"sessionToken": token.decode('ascii'), "duration": SESSION_TOKEN_DURATION, "currentUser": user})
             else:

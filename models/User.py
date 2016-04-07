@@ -6,6 +6,9 @@ from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
 from common.app_config import Config
 
+SESSION_TOKEN_DURATION = getattr(Config, 'SESSION_TOKEN_DURATION')
+serializer = Serializer(getattr(Config, 'SECRET_KEY'), SESSION_TOKEN_DURATION)
+
 
 class User(Serializable, Base):
     __tablename__ = 'users'
@@ -29,17 +32,13 @@ class User(Serializable, Base):
     def verify_password(self, password):
         return pwd_context.verify(password, self.password_hash)
 
-    def generate_auth_token(self, expiration=600):
-        if not hasattr(Config, 'SECRET_KEY'):
-            Config['SECRET_KEY'] = '!@$#%^^cg#$^^**(#$dhf!@#$@$#%#$'
-        s = Serializer(getattr(Config, 'SECRET_KEY'), expires_in=expiration)
-        return s.dumps({'id': self.id})
+    def generate_auth_token(self):
+        return serializer.dumps({'id': self.id})
 
     @staticmethod
     def verify_auth_token(token):
-        s = Serializer(getattr(Config, 'SECRET_KEY'))
         try:
-            data = s.loads(token)
+            data = serializer.loads(token)
         except SignatureExpired:
             return None  # valid token, but expired
         except BadSignature:
