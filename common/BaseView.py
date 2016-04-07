@@ -41,8 +41,9 @@ class BaseView:
         db.session.add(instance)
         try:
             db.session.commit()
+            db.session.refresh(instance)
             return jsonify(instance, expand=self.__always_expand__), 201
-        except sqlalchemy.exc.IntegrityError, exc:
+        except sqlalchemy.exc.SQLAlchemyError, exc:
             reason = exc.message
             db.session.rollback()
             return jsonify({"message": reason}), 400
@@ -52,7 +53,7 @@ class BaseView:
         try:
             db.session.commit()
             return jsonify({"id": id}), 200
-        except sqlalchemy.exc.IntegrityError, exc:
+        except sqlalchemy.exc.SQLAlchemyError, exc:
             reason = exc.message
             db.session.rollback()
             return jsonify({"message": reason}), 400
@@ -63,7 +64,7 @@ class BaseView:
         try:
             db.session.commit()
             return jsonify(instance, expand=self.__always_expand__)
-        except sqlalchemy.exc.IntegrityError, exc:
+        except sqlalchemy.exc.SQLAlchemyError, exc:
             reason = exc.message
             db.session.rollback()
             return jsonify({"message": reason}), 400

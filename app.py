@@ -27,8 +27,8 @@ for name in pkgutil.iter_modules([package_path]):
 
 if __name__ == '__main__':
     db.init_db()
-    if not os.path.exists('db.sqlite'):
-        db.create_all()
+    # if not os.path.exists('db.sqlite'):
+    db.create_all()
     port = int(os.environ.get('PORT', 5000))
     host = str(os.environ.get('HOST', 'localhost'))
     app.run(host=host, port=port)
