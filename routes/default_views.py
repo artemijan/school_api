@@ -6,6 +6,7 @@ from security.decorators import is_authorized
 
 class TeacherView(BaseView):
     __model_class__ = Teacher
+    __always_expand__ = ('subjects',)
 
 
 class SubjectView(BaseView):
@@ -19,4 +20,4 @@ class EventsView(BaseView):
 default_decorators = [is_authorized]
 default_views = [TeacherView(decorators=default_decorators, base_url='/api/teachers/').get_view(),
                  SubjectView(decorators=default_decorators, base_url='/api/subjects/').get_view(),
-                 EventsView(decorators=default_decorators, base_url='/api/events/')]
+                 EventsView(decorators=default_decorators, base_url='/api/events/').get_view()]
