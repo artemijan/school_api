@@ -9,27 +9,6 @@ import sqlalchemy
 users = Blueprint('users', __name__)
 
 
-@users.route('/api/users', methods=['POST'])
-@is_authorized
-def new_user():
-    username = request.json.get('username')
-    password = request.json.get('password')
-    if username is None or password is None:
-        abort(400)  # missing arguments
-    if User.query.filter_by(username=username).first() is not None:
-        return jsonify({"message": "User already exist"}), 400
-    user = User(username=username)
-    user.hash_password(password)
-    db.session.add(user)
-    try:
-        db.session.commit()
-        return jsonify({'username': user.username}), 201
-    except sqlalchemy.exc.IntegrityError, exc:
-        reason = exc.message
-        db.session.rollback()
-        return jsonify({"message": reason}), 400
-
-
 @users.route('/api/users/<int:id>', methods=['GET', 'PUT', 'DELETE'])
 @is_authorized
 def get_user(id):
@@ -43,8 +22,9 @@ def get_user(id):
         user.username = get_json_key(request.json, 'username')
         user.email = get_json_key(request.json, 'email')
         try:
+            serialized = jsonify(user)
             db.session.commit()
-            return jsonify(user)
+            return serialized, 200
         except sqlalchemy.exc.IntegrityError, exc:
             reason = exc.message
             db.session.rollback()
@@ -54,4 +34,4 @@ def get_user(id):
 @users.route('/api/users/', methods=['GET'])
 @is_authorized
 def user_list():
-    return jsonify(User.query.all())
+    return jsonify(User.query.all()), 200

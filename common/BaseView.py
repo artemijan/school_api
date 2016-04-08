@@ -41,7 +41,6 @@ class BaseView:
         db.session.add(instance)
         try:
             db.session.commit()
-            db.session.refresh(instance)
             return jsonify(instance, expand=self.__always_expand__), 201
         except sqlalchemy.exc.SQLAlchemyError, exc:
             reason = exc.message
@@ -62,8 +61,9 @@ class BaseView:
         instance = self.__model_class__.query.get(id)
         instance.deserialize(request.json)
         try:
+            serialized = jsonify(instance, expand=self.__always_expand__)
             db.session.commit()
-            return jsonify(instance, expand=self.__always_expand__)
+            return serialized, 200
         except sqlalchemy.exc.SQLAlchemyError, exc:
             reason = exc.message
             db.session.rollback()

@@ -42,7 +42,7 @@ class User(Serializable, Base):
     __write_only__ = ('password_hash', 'user_type')
     __exclude__ = ('password',)
     id = Column(Integer, primary_key=True)
-    user_type = Column(Enum("student", "teacher", name="user_type_enum"), nullable=True)
+    user_type = Column(String(25))
     username = Column(String(50), unique=True, nullable=True)
     first_name = Column(String(50), unique=False, nullable=False)
     last_name = Column(String(50), unique=False, nullable=False)

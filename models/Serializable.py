@@ -52,7 +52,6 @@ class Serializable(object):
                         self._handle_single_relation(prop, value)
                     else:
                         setattr(self, prop, value)
-        self.__cache_dict__ = self.__dict__.copy()
         return self
 
     def deserialize(self, json):
@@ -81,16 +80,12 @@ class Serializable(object):
         expand = kwargs.get('expand', ()) or ()
         prop = 'props'
         if expand:
-            setattr(self, '__cache_dict__', None)
             # expand all the fields
             for key in expand:
                 getattr(self, key)
-        cache = getattr(self, '__cache_dict__', None)
-        if cache is None or cache.get('id', None) is None:
-            getattr(self, 'id', None)
-            iterable = self.__dict__
-        else:
-            iterable = cache
+        # make sure that this object is updated
+        getattr(self, 'id', None)
+        iterable = self.__dict__
         is_custom_property_set = False
         # include only properties passed as parameter
         if (prop in kwargs) and (kwargs.get(prop, None) is not None):
