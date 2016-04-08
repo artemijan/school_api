@@ -43,4 +43,4 @@ def register():
         reason = exc.message
         db.session.rollback()
         return jsonify({"message": reason}), 400
-    return jsonify(user)
+    return jsonify(user), 201

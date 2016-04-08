@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Enum
 from common.db import Base
 from models.Serializable import Serializable
 from passlib.apps import custom_app_context as pwd_context
@@ -39,14 +39,20 @@ class User(Serializable, Base):
     __tablename__ = 'users'
     __plural__ = 'users'
     # is needed for serializable, property wouldn't be in serialized data because it's write only
-    __write_only__ = ('password_hash',)
+    __write_only__ = ('password_hash', 'user_type')
     __exclude__ = ('password',)
     id = Column(Integer, primary_key=True)
+    user_type = Column(Enum("student", "teacher", name="user_type_enum"), nullable=True)
     username = Column(String(50), unique=True, nullable=True)
     first_name = Column(String(50), unique=False, nullable=False)
     last_name = Column(String(50), unique=False, nullable=False)
     email = Column(String(120), unique=True, nullable=False)
     password_hash = Column(String(64))
+
+    __mapper_args__ = {
+        'polymorphic_on': user_type,
+        'polymorphic_identity': 'user'
+    }
 
     def __repr__(self):
         return '<User %>' % self.name

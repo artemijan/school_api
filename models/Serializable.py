@@ -87,6 +87,7 @@ class Serializable(object):
                 getattr(self, key)
         cache = getattr(self, '__cache_dict__', None)
         if cache is None or cache.get('id', None) is None:
+            getattr(self, 'id', None)
             iterable = self.__dict__
         else:
             iterable = cache

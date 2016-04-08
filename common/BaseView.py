@@ -49,7 +49,7 @@ class BaseView:
             return jsonify({"message": reason}), 400
 
     def delete(self, id):
-        self.__model_class__.query.filter_bu(id=id).delete()
+        self.__model_class__.query.filter_by(id=id).delete()
         try:
             db.session.commit()
             return jsonify({"id": id}), 200
@@ -70,6 +70,7 @@ class BaseView:
             return jsonify({"message": reason}), 400
 
     def get(self, id):
+
         instance = self.__model_class__.query.get(id)
         if instance is None:
             return jsonify({"message": self.__model_class__.__name__ + " not found"}), 404
