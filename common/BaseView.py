@@ -37,34 +37,34 @@ class BaseView:
         return self.__blue_print__
 
     def post(self):
-        instance = self.__model_class__.from_json(request.json)
-        db.session.add(instance)
         try:
+            instance = self.__model_class__.from_json(request.json)
+            db.session.add(instance)
             db.session.commit()
             return jsonify(instance, expand=self.__always_expand__), 201
-        except sqlalchemy.exc.SQLAlchemyError, exc:
+        except (ValueError, sqlalchemy.exc.SQLAlchemyError), exc:
             reason = exc.message
             db.session.rollback()
             return jsonify({"message": reason}), 400
 
     def delete(self, id):
-        self.__model_class__.query.filter_by(id=id).delete()
         try:
+            self.__model_class__.query.filter_by(id=id).delete()
             db.session.commit()
             return jsonify({"id": id}), 200
-        except sqlalchemy.exc.SQLAlchemyError, exc:
+        except (ValueError, sqlalchemy.exc.SQLAlchemyError), exc:
             reason = exc.message
             db.session.rollback()
             return jsonify({"message": reason}), 400
 
     def put(self, id):
-        instance = self.__model_class__.query.get(id)
-        instance.deserialize(request.json)
         try:
+            instance = self.__model_class__.query.get(id)
+            instance.deserialize(request.json)
             serialized = jsonify(instance, expand=self.__always_expand__)
             db.session.commit()
             return serialized, 200
-        except sqlalchemy.exc.SQLAlchemyError, exc:
+        except (ValueError, sqlalchemy.exc.SQLAlchemyError), exc:
             reason = exc.message
             db.session.rollback()
             return jsonify({"message": reason}), 400

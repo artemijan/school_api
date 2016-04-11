@@ -5,7 +5,7 @@ from models.User import User
 
 def is_authorized(fn):
     def wrapped_fn(*args, **kwargs):
-        token = request.headers.get('Authorization')
+        token = request.headers.get('Authorization', None)
         if token is None:
             return jsonify({"message": "Authorization required"}), 403
         user = User.verify_auth_token(token)
